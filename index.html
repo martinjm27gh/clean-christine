@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clean Christine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,700;1,9..144,900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF6EE; --card:#FFFFFF; --ink:#3B332B; --muted:#8A7E6E; --line:#EBE2D2;
+    --accent:#47788F; --accent-soft:#E5EEF2;
+    --daily:#4E8F7B;     --daily-soft:#E6F1EC;
+    --weekly:#47788F;    --weekly-soft:#E5EEF2;
+    --monthly:#966EA0;   --monthly-soft:#F1E9F3;
+    --quarterly:#C08A4B; --quarterly-soft:#F7EDDE;
+    --season:#B56576;    --season-soft:#F6E8EB;
+    --radius:18px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Nunito Sans',system-ui,-apple-system,sans-serif;
+    background:var(--bg); color:var(--ink);
+    line-height:1.5; font-size:15px;
+    padding:0 16px 64px;
+  }
+  /* gingham ribbon across the very top, like a kitchen towel */
+  .gingham{
+    height:14px; margin:0 -16px 26px;
+    background:
+      repeating-linear-gradient(90deg, rgba(71,120,143,.28) 0 8px, transparent 8px 16px),
+      repeating-linear-gradient(0deg, rgba(71,120,143,.28) 0 8px, transparent 8px 16px),
+      #FDFBF6;
+  }
+  .wrap{max-width:860px; margin:0 auto}
+
+  /* ---------- header ---------- */
+  .brand{display:flex; align-items:center; gap:16px}
+  .badge{flex:none; width:76px; height:76px}
+  .eyebrow{
+    font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:2px;
+  }
+  h1{
+    font-family:'Fraunces',serif; font-style:italic;
+    font-weight:900; font-size:clamp(30px,5.5vw,44px); letter-spacing:-.01em;
+    line-height:1.02; color:var(--ink);
+  }
+  .topline{
+    display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;
+    gap:12px; margin-bottom:22px;
+  }
+  .today-label{color:var(--muted); font-size:13px; font-weight:600; margin-top:6px}
+
+  /* ---------- rhythm strip ---------- */
+  .rhythm{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:6px;
+    margin-bottom:22px;
+  }
+  .day-chip{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:10px 6px 9px; text-align:center; cursor:pointer;
+    transition:border-color .15s, box-shadow .15s;
+    font-family:inherit;
+  }
+  .day-chip:hover{border-color:#CFC2AC}
+  .day-chip:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .day-chip .dow{font-size:11px; font-weight:800; letter-spacing:.08em; color:var(--muted); text-transform:uppercase}
+  .day-chip .focus{font-size:12px; font-weight:700; margin-top:3px; color:var(--ink)}
+  .day-chip.is-today{border:2px solid var(--accent); box-shadow:0 3px 12px rgba(71,120,143,.16)}
+  .day-chip.is-today .dow{color:var(--accent)}
+  .day-chip.is-selected:not(.is-today){border-color:var(--ink)}
+  .day-chip.flex-day .focus{color:var(--muted); font-weight:600}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex; gap:8px; margin-bottom:18px; align-items:center; flex-wrap:wrap}
+  .tab{
+    font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;
+    padding:9px 18px; border-radius:999px; border:1px solid var(--line);
+    background:var(--card); color:var(--muted);
+    transition:all .15s;
+  }
+  .tab:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .tab.active{background:var(--accent); border-color:var(--accent); color:#fff}
+  .back-today{
+    margin-left:auto; font-family:inherit; font-size:13px; font-weight:700;
+    color:var(--accent); background:var(--accent-soft); border:none; cursor:pointer;
+    padding:8px 14px; border-radius:999px; transition:filter .15s;
+  }
+  .back-today:hover{filter:brightness(.96)}
+  .back-today:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  /* ---------- sections ---------- */
+  .section{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 18px 12px; margin-bottom:14px;
+    box-shadow:0 2px 8px rgba(80,64,40,.04);
+  }
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-bottom:8px;
+  }
+  .section-title{
+    display:flex; align-items:center; gap:9px;
+    font-family:'Fraunces',serif; font-weight:700; font-size:18px;
+  }
+  .head-right{display:flex; align-items:center; gap:8px}
+  .freq-dot{width:9px; height:9px; border-radius:50%; flex:none}
+  .section-sub{font-size:12.5px; color:var(--muted); font-weight:600; margin:-4px 0 8px}
+  .count-pill{
+    font-size:12px; font-weight:700; color:var(--muted);
+    background:var(--bg); border-radius:999px; padding:3px 10px; white-space:nowrap;
+  }
+  .count-pill.done{color:var(--daily); background:var(--daily-soft)}
+  .add-btn{
+    flex:none; width:26px; height:26px; border-radius:50%;
+    border:1.5px dashed #C9BBA2; background:transparent; color:var(--muted);
+    font-size:16px; line-height:1; cursor:pointer; font-family:inherit; font-weight:700;
+    transition:all .15s;
+  }
+  .add-btn:hover{border-color:var(--accent); color:var(--accent); border-style:solid}
+  .add-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  .bar{height:5px; background:var(--bg); border-radius:99px; margin:0 0 8px; overflow:hidden}
+  .bar-fill{height:100%; border-radius:99px; transition:width .3s ease}
+
+  /* ---------- task rows ---------- */
+  .task{
+    display:flex; align-items:flex-start; gap:11px;
+    padding:10px 2px; border-top:1px dashed var(--line);
+    cursor:pointer; user-select:none;
+  }
+  .task:first-of-type{border-top:none}
+  .box{
+    flex:none; width:21px; height:21px; margin-top:1px;
+    border:2px solid #CFC2AC; border-radius:7px; background:#fff;
+    display:grid; place-items:center; transition:all .12s;
+  }
+  .task:hover .box{border-color:var(--daily)}
+  .task.done .box{background:var(--daily); border-color:var(--daily)}
+  .task.done .box::after{
+    content:''; width:10px; height:6px;
+    border-left:2.5px solid #fff; border-bottom:2.5px solid #fff;
+    transform:rotate(-45deg) translate(1px,-1px);
+  }
+  .task-text{flex:1}
+  .task-name{font-size:14.5px; font-weight:600; transition:color .12s}
+  .task.done .task-name{color:var(--muted); text-decoration:line-through; text-decoration-color:#CFC2AC}
+  .room-tag{
+    display:inline-block; font-size:11px; font-weight:700; color:var(--muted);
+    margin-left:7px;
+  }
+  .task:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:8px}
+  .edit-btn{
+    flex:none; border:none; background:transparent; cursor:pointer;
+    color:#C9BBA2; font-size:14px; padding:2px 4px; border-radius:6px;
+    transition:color .15s; font-family:inherit;
+  }
+  .task:hover .edit-btn{color:var(--muted)}
+  .edit-btn:hover{color:var(--accent) !important}
+  .edit-btn:focus-visible{outline:2px solid var(--accent); outline-offset:1px}
+
+  .empty-note{color:var(--muted); font-size:13.5px; padding:6px 2px 12px}
+
+  /* ---------- master view ---------- */
+  .freq-band{
+    display:flex; align-items:center; gap:10px; margin:26px 0 10px; flex-wrap:wrap;
+  }
+  .freq-band:first-child{margin-top:4px}
+  .freq-band h2{
+    font-family:'Fraunces',serif; font-weight:700; font-size:21px;
+  }
+  .freq-band .cadence{
+    font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+    padding:4px 11px; border-radius:999px;
+  }
+  .subgroup-title{
+    font-size:12px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--muted); padding:12px 2px 4px;
+  }
+
+  /* ---------- modal ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(59,51,43,.4);
+    display:none; align-items:flex-end; justify-content:center; z-index:50;
+    padding:16px;
+  }
+  .overlay.open{display:flex}
+  @media(min-width:560px){ .overlay{align-items:center} }
+  .modal{
+    background:var(--card); border-radius:20px; width:100%; max-width:440px;
+    padding:22px 20px; box-shadow:0 12px 40px rgba(59,51,43,.25);
+  }
+  .modal h3{font-family:'Fraunces',serif; font-weight:700; font-size:20px; margin-bottom:14px}
+  .field{margin-bottom:12px}
+  .field label{display:block; font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:5px}
+  .field input, .field select{
+    width:100%; font-family:inherit; font-size:15px; font-weight:600; color:var(--ink);
+    padding:10px 12px; border:1.5px solid var(--line); border-radius:12px; background:#FDFBF6;
+  }
+  .field input:focus, .field select:focus{outline:none; border-color:var(--accent)}
+  .field-row{display:flex; gap:10px}
+  .field-row .field{flex:1}
+  .modal-actions{display:flex; gap:10px; margin-top:16px}
+  .btn{
+    font-family:inherit; font-size:14px; font-weight:800; cursor:pointer;
+    padding:11px 18px; border-radius:999px; border:none; transition:filter .15s;
+  }
+  .btn:hover{filter:brightness(.95)}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .btn-save{background:var(--accent); color:#fff; flex:1}
+  .btn-cancel{background:var(--bg); color:var(--muted)}
+  .btn-delete{background:var(--season-soft); color:var(--season)}
+
+  footer{
+    margin-top:28px; text-align:center; color:var(--muted); font-size:12.5px;
+  }
+  .restore-link{
+    background:none; border:none; font-family:inherit; font-size:12.5px;
+    color:var(--muted); text-decoration:underline; cursor:pointer; margin-top:6px;
+  }
+  .restore-link:hover{color:var(--accent)}
+
+  @media(max-width:640px){
+    .rhythm{gap:4px}
+    .day-chip{padding:8px 3px}
+    .day-chip .focus{font-size:10.5px}
+    .badge{width:60px; height:60px}
+  }
+  @media print{
+    body{background:#fff; padding:0}
+    .tabs,.rhythm,.gingham,.add-btn,.edit-btn{display:none}
+    .section{break-inside:avoid; border-color:#ccc; box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="gingham"></div>
+<div class="wrap">
+  <div class="topline">
+    <div class="brand">
+      <svg class="badge" viewBox="0 0 100 100" role="img" aria-label="Clean Christine badge">
+        <!-- stitched embroidery-hoop badge -->
+        <circle cx="50" cy="50" r="46" fill="#FDFBF6" stroke="#47788F" stroke-width="2.5"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#47788F" stroke-width="1.8"
+                stroke-dasharray="4 5" stroke-linecap="round"/>
+        <!-- little house -->
+        <rect x="34" y="48" width="32" height="24" rx="2" fill="#47788F"/>
+        <path d="M29 50 L50 32 L71 50" fill="none" stroke="#47788F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="58" y="34" width="6" height="10" rx="1.5" fill="#47788F"/>
+        <!-- door with heart -->
+        <rect x="44" y="56" width="12" height="16" rx="5" fill="#FDFBF6"/>
+        <path d="M50 63.5 c-1.6-2.4 -4.8-1 -4.8 1.2 c0 1.9 2.7 3.7 4.8 5 c2.1-1.3 4.8-3.1 4.8-5 c0-2.2 -3.2-3.6 -4.8-1.2 Z" fill="#B56576"/>
+        <!-- sparkle -->
+        <path d="M76 24 l1.8 4.6 4.6 1.8 -4.6 1.8 -1.8 4.6 -1.8 -4.6 -4.6 -1.8 4.6 -1.8 Z" fill="#C08A4B"/>
+        <circle cx="24" cy="30" r="2.2" fill="#C08A4B"/>
+      </svg>
+      <div>
+        <div class="eyebrow">A tidy little house plan</div>
+        <h1>Clean Christine</h1>
+        <div class="today-label" id="todayLabel"></div>
+      </div>
+    </div>
+    <div class="count-pill" id="overallPill">—</div>
+  </div>
+
+  <div class="rhythm" id="rhythmStrip" role="tablist" aria-label="Weekly rhythm"></div>
+
+  <div class="tabs" id="tabBar">
+    <button class="tab active" id="tabWeek" onclick="setView('week')">This Week</button>
+    <button class="tab" id="tabAll" onclick="setView('all')">Everything</button>
+  </div>
+
+  <div id="content"></div>
+
+  <footer>
+    Checkmarks reset on their own — daily each morning, weekly each Monday, monthly on the 1st.<br>
+    Use the little <b>+</b> to add a task, or the pencil to change or remove one.<br>
+    <button class="restore-link" onclick="restoreDefaults()">Restore the original task list</button>
+  </footer>
+</div>
+
+<!-- add / edit modal -->
+<div class="overlay" id="overlay" onclick="if(event.target===this) closeModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">Add a task</h3>
+    <div class="field">
+      <label for="fName">What needs doing?</label>
+      <input id="fName" type="text" maxlength="80" placeholder="e.g. Wipe down the pet bowls">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="fRoom">Room</label>
+        <select id="fRoom">
+          <option>Whole house</option><option>Kitchen</option><option>Bathroom</option>
+          <option>Bedrooms</option><option>Living</option><option>Laundry</option>
+          <option>Entry</option><option>Office</option><option>Exterior</option><option>Utility</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fFreq">How often</label>
+        <select id="fFreq" onchange="syncModalFields()">
+          <option value="daily">Every day</option>
+          <option value="weekly">Once a week</option>
+          <option value="monthly">Once a month</option>
+          <option value="quarterly">Every 3 months</option>
+          <option value="biannual">Every 6 months</option>
+          <option value="annual">Once a year</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" id="dayField" style="display:none">
+      <label for="fDay">Which day</label>
+      <select id="fDay">
+        <option value="1">Monday · Bathrooms</option>
+        <option value="2">Tuesday · Dust &amp; surfaces</option>
+        <option value="3">Wednesday · Floors</option>
+        <option value="4">Thursday · Kitchen</option>
+        <option value="5">Friday · Reset &amp; linens</option>
+        <option value="6">Saturday</option>
+        <option value="0">Sunday</option>
+      </select>
+    </div>
+    <div class="field" id="weekField" style="display:none">
+      <label for="fWeek">Which week of the month</label>
+      <select id="fWeek">
+        <option value="1">Week 1 · Kitchen deep clean</option>
+        <option value="2">Week 2 · Living areas &amp; bedrooms</option>
+        <option value="3">Week 3 · Bath &amp; laundry deep clean</option>
+        <option value="4">Week 4 · Whole-house details</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-delete" id="deleteBtn" style="display:none" onclick="deleteTask()">Remove</button>
+      <button class="btn btn-save" onclick="saveTask()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= CONSTANTS ================= */
+const DAY_FOCUS = {1:'Bathrooms',2:'Dust & surfaces',3:'Floors',4:'Kitchen',5:'Reset & linens',6:'Flex / off',0:'Flex / off'};
+const WEEK_THEME = {1:'Kitchen deep clean',2:'Living areas & bedrooms',3:'Bath & laundry deep clean',4:'Whole-house details'};
+const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/* ================= DEFAULT TASK LIST ================= */
+function defaultTasks(){
+  const list = []; let i = 0;
+  const add = (freq,name,room,extra={}) => list.push({id:'s'+(i++), freq, name, room, ...extra});
+
+  /* Daily */
+  add('daily','Make the beds','Bedrooms');
+  add('daily','Wash dishes / run & empty dishwasher','Kitchen');
+  add('daily','Wipe counters & stovetop after cooking','Kitchen');
+  add('daily','Wipe kitchen sink & faucet dry','Kitchen');
+  add('daily','Quick wipe of bathroom sink & counter','Bathroom');
+  add('daily','10-minute evening pickup & declutter','Whole house');
+  add('daily','Sort mail & clear the drop zone','Entry');
+  add('daily','Take out trash & recycling as needed','Whole house');
+
+  /* Weekly */
+  add('weekly','Scrub toilets — bowl, seat, base','Bathroom',{day:1});
+  add('weekly','Clean showers & tubs (walls, floor, glass)','Bathroom',{day:1});
+  add('weekly','Clean sinks, counters & faucets','Bathroom',{day:1});
+  add('weekly','Clean bathroom mirrors','Bathroom',{day:1});
+  add('weekly','Swap out hand & bath towels','Bathroom',{day:1});
+  add('weekly','Empty bathroom trash','Bathroom',{day:1});
+  add('weekly','Mop bathroom floors','Bathroom',{day:1});
+
+  add('weekly','Dust all furniture surfaces & shelves','Whole house',{day:2});
+  add('weekly','Dust TV, electronics & charging areas','Living',{day:2});
+  add('weekly','Dust window sills & ledges','Whole house',{day:2});
+  add('weekly','Dust picture frames & décor','Whole house',{day:2});
+  add('weekly','Wipe light switches & door handles','Whole house',{day:2});
+  add('weekly','Tidy & wipe nightstands & dressers','Bedrooms',{day:2});
+
+  add('weekly','Vacuum all carpets & rugs','Whole house',{day:3});
+  add('weekly','Vacuum or sweep hard floors','Whole house',{day:3});
+  add('weekly','Mop hard floors','Whole house',{day:3});
+  add('weekly','Shake out entry & door mats','Entry',{day:3});
+
+  add('weekly','Wipe exteriors of fridge, oven & dishwasher','Kitchen',{day:4});
+  add('weekly','Clean inside of microwave','Kitchen',{day:4});
+  add('weekly','Spot-wipe cabinet & drawer fronts','Kitchen',{day:4});
+  add('weekly','Toss expired food & wipe fridge shelves','Kitchen',{day:4});
+  add('weekly','Scrub sink & freshen the drain / disposal','Kitchen',{day:4});
+  add('weekly','Empty crumb tray & wipe small appliances','Kitchen',{day:4});
+  add('weekly','Wipe down kitchen trash can & lid','Kitchen',{day:4});
+
+  add('weekly','Change bed linens','Bedrooms',{day:5});
+  add('weekly','Wash towels & bath mats rotation','Laundry',{day:5});
+  add('weekly','Water the plants','Whole house',{day:5});
+  add('weekly','Tidy entryway / mudroom & shoes','Entry',{day:5});
+  add('weekly','Spot-clean glass doors & smudged windows','Whole house',{day:5});
+  add('weekly','Catch up on anything missed this week','Whole house',{day:5});
+
+  /* Monthly */
+  add('monthly','Clean inside of refrigerator — shelves & drawers','Kitchen',{week:1});
+  add('monthly','Wipe down ALL cabinet exteriors, top to bottom','Kitchen',{week:1});
+  add('monthly','Degrease range hood & wash its filter','Kitchen',{week:1});
+  add('monthly','Clean dishwasher filter & run a cleaning cycle','Kitchen',{week:1});
+  add('monthly','Wipe backsplash & wall behind stove','Kitchen',{week:1});
+  add('monthly','Descale coffee maker / kettle','Kitchen',{week:1});
+  add('monthly','Wipe pantry shelves & check expirations','Kitchen',{week:1});
+
+  add('monthly','Vacuum under couch cushions & upholstery','Living',{week:2});
+  add('monthly','Vacuum under beds & movable furniture','Bedrooms',{week:2});
+  add('monthly','Dust ceiling fans & light fixtures','Whole house',{week:2});
+  add('monthly','Dust blinds & shutters','Whole house',{week:2});
+  add('monthly','Wash throw blankets & pillow covers','Living',{week:2});
+  add('monthly','Clean interior windows in main living areas','Living',{week:2});
+
+  add('monthly','Wash bath mats & shower curtain / liner','Bathroom',{week:3});
+  add('monthly','Spot-scrub tile grout & caulk lines','Bathroom',{week:3});
+  add('monthly','Run washer cleaning cycle & wipe door gasket','Laundry',{week:3});
+  add('monthly','Wipe dryer drum & clean lint trap area','Laundry',{week:3});
+  add('monthly','Wipe out vanity drawers & medicine cabinet','Bathroom',{week:3});
+  add('monthly','Clean bathroom exhaust fan covers','Bathroom',{week:3});
+
+  add('monthly','Wash baseboards (all rooms, or rotate half)','Whole house',{week:4});
+  add('monthly','Wipe doors, door frames & switch plates','Whole house',{week:4});
+  add('monthly','Vacuum air vents & return grilles','Whole house',{week:4});
+  add('monthly','Dust tops of fridge, cabinets & door frames','Kitchen',{week:4});
+  add('monthly','Disinfect all trash cans, inside & out','Whole house',{week:4});
+  add('monthly','Test smoke & CO detectors','Whole house',{week:4});
+  add('monthly','Wipe scuff marks off walls & stair rails','Whole house',{week:4});
+
+  /* Quarterly */
+  add('quarterly','Replace HVAC / furnace filter','Whole house');
+  add('quarterly','Deep-clean oven interior & racks','Kitchen');
+  add('quarterly','Pull out & clean behind / under washer & dryer','Laundry');
+  add('quarterly','Clean window tracks & wipe all interior windows','Whole house');
+  add('quarterly','Vacuum mattresses & rotate them','Bedrooms');
+  add('quarterly','Wash pillows (check care labels)','Bedrooms');
+  add('quarterly','Clean light fixture globes & lamp shades','Whole house');
+  add('quarterly','Declutter one zone — closet, pantry or garage','Whole house');
+  add('quarterly','Condition wood furniture & cutting boards','Whole house');
+
+  /* Every 6 months */
+  add('biannual','Vacuum refrigerator coils & clean behind fridge','Kitchen');
+  add('biannual','Move & clean behind heavy furniture','Whole house');
+  add('biannual','Wash comforters, duvets & mattress protectors','Bedrooms');
+  add('biannual','Clean window screens','Whole house');
+  add('biannual','Deep-clean carpets & area rugs','Whole house');
+  add('biannual','Clean gutters & check downspouts (spring & fall)','Exterior');
+  add('biannual','Purge closets — donate what nobody wears','Whole house');
+  add('biannual','Descale showerheads & faucet aerators','Bathroom');
+
+  /* Yearly */
+  add('annual','Clean dryer vent duct (to the outside)','Laundry');
+  add('annual','Wash exterior windows','Exterior');
+  add('annual','Power-wash siding, deck or patio','Exterior');
+  add('annual','Flush the water heater','Utility');
+  add('annual','Replace smoke / CO detector batteries','Whole house');
+  add('annual','Professional carpet or upholstery cleaning','Whole house');
+  add('annual','Deep-clean & organize garage / attic / basement','Whole house');
+  add('annual','Chimney inspection & sweep (if used)','Living');
+
+  return list;
+}
+
+/* ================= LIVE DATE HANDLING ================= */
+let today = new Date();
+function refreshDate(){
+  const fresh = new Date();
+  const changed = fresh.toDateString() !== today.toDateString();
+  today = fresh;
+  return changed;
+}
+function onDayRollover(){ selectedDay = today.getDay(); render(); }
+document.addEventListener('visibilitychange', () => { if(!document.hidden && refreshDate()) onDayRollover(); });
+window.addEventListener('focus', () => { if(refreshDate()) onDayRollover(); });
+setInterval(() => { if(refreshDate()) onDayRollover(); }, 60000);
+
+function pad(n){return String(n).padStart(2,'0')}
+function isoWeek(d){
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - day);
+  const yStart = new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return t.getUTCFullYear() + '-W' + pad(Math.ceil((((t - yStart) / 86400000) + 1) / 7));
+}
+function stampFor(freq){
+  const y = today.getFullYear(), m = today.getMonth();
+  switch(freq){
+    case 'daily':     return y+'-'+pad(m+1)+'-'+pad(today.getDate());
+    case 'weekly':    return isoWeek(today);
+    case 'monthly':   return y+'-'+pad(m+1);
+    case 'quarterly': return y+'-Q'+(Math.floor(m/3)+1);
+    case 'biannual':  return y+'-H'+(m<6?1:2);
+    case 'annual':    return String(y);
+  }
+}
+function weekOfMonth(){ return Math.min(4, Math.ceil(today.getDate()/7)); }
+
+/* ================= STATE & STORAGE ================= */
+let tasks = [];
+let checks = {};
+const KEY = 'clean-christine';
+const inClaude = typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function';
+
+async function loadState(){
+  let saved = null;
+  try{
+    if(inClaude){
+      const r = await window.storage.get(KEY);
+      if(r && r.value) saved = JSON.parse(r.value);
+    } else {
+      const v = localStorage.getItem(KEY);
+      if(v) saved = JSON.parse(v);
+    }
+  }catch(e){ /* first run */ }
+  if(saved && Array.isArray(saved.tasks)){
+    tasks = saved.tasks;
+    checks = saved.checks || {};
+  } else {
+    tasks = defaultTasks();
+    checks = {};
+    saveState();
+  }
+}
+async function saveState(){
+  const payload = JSON.stringify({tasks, checks});
+  try{
+    if(inClaude) await window.storage.set(KEY, payload);
+    else localStorage.setItem(KEY, payload);
+  }catch(e){ /* storage blocked — this session only */ }
+}
+function isDone(t){ return checks[t.id] === stampFor(t.freq); }
+async function toggle(id){
+  if(refreshDate()){ onDayRollover(); }
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  if(isDone(t)) delete checks[t.id];
+  else checks[t.id] = stampFor(t.freq);
+  await saveState();
+  render();
+}
+async function restoreDefaults(){
+  if(!confirm('Put back the original task list? Tasks you added or changed will be replaced. Checkmarks start fresh.')) return;
+  tasks = defaultTasks();
+  checks = {};
+  await saveState();
+  render();
+}
+
+/* ================= ADD / EDIT MODAL ================= */
+let editingId = null;   // null = adding new
+
+function syncModalFields(){
+  const f = document.getElementById('fFreq').value;
+  document.getElementById('dayField').style.display  = f==='weekly'  ? '' : 'none';
+  document.getElementById('weekField').style.display = f==='monthly' ? '' : 'none';
+}
+function openAdd(freq, day, week){
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add a task';
+  document.getElementById('deleteBtn').style.display = 'none';
+  document.getElementById('fName').value = '';
+  document.getElementById('fRoom').value = 'Whole house';
+  document.getElementById('fFreq').value = freq || 'weekly';
+  document.getElementById('fDay').value  = String(day!==undefined ? day : 1);
+  document.getElementById('fWeek').value = String(week || 1);
+  syncModalFields();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('fName').focus();
+}
+function openEdit(id){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit task';
+  document.getElementById('deleteBtn').style.display = '';
+  document.getElementById('fName').value = t.name;
+  const roomSel = document.getElementById('fRoom');
+  roomSel.value = t.room;
+  if(roomSel.value !== t.room) roomSel.value = 'Whole house';
+  document.getElementById('fFreq').value = t.freq;
+  document.getElementById('fDay').value  = String(t.day!==undefined ? t.day : 1);
+  document.getElementById('fWeek').value = String(t.week || 1);
+  syncModalFields();
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('overlay').classList.remove('open');
+  editingId = null;
+}
+async function saveTask(){
+  const name = document.getElementById('fName').value.trim();
+  if(!name){ document.getElementById('fName').focus(); return; }
+  const freq = document.getElementById('fFreq').value;
+  const room = document.getElementById('fRoom').value;
+  const t = {
+    id: editingId || ('u'+Date.now()),
+    freq, name, room
+  };
+  if(freq==='weekly')  t.day  = parseInt(document.getElementById('fDay').value,10);
+  if(freq==='monthly') t.week = parseInt(document.getElementById('fWeek').value,10);
+
+  if(editingId){
+    const idx = tasks.findIndex(x=>x.id===editingId);
+    if(idx>-1){
+      // if the schedule slot changed, clear its old checkmark
+      const old = tasks[idx];
+      if(old.freq!==freq) delete checks[editingId];
+      tasks[idx] = t;
+    }
+  } else {
+    tasks.push(t);
+  }
+  await saveState();
+  closeModal();
+  render();
+}
+async function deleteTask(){
+  if(!editingId) return;
+  if(!confirm('Remove this task from the schedule?')) return;
+  tasks = tasks.filter(x=>x.id!==editingId);
+  delete checks[editingId];
+  await saveState();
+  closeModal();
+  render();
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ================= RENDERING ================= */
+const FREQ_META = {
+  daily:     {label:'Daily',        cadence:'Every day',      color:'var(--daily)',     soft:'var(--daily-soft)'},
+  weekly:    {label:'Weekly',       cadence:'Once a week',    color:'var(--weekly)',    soft:'var(--weekly-soft)'},
+  monthly:   {label:'Monthly',      cadence:'Once a month',   color:'var(--monthly)',   soft:'var(--monthly-soft)'},
+  quarterly: {label:'Quarterly',    cadence:'Every 3 months', color:'var(--quarterly)', soft:'var(--quarterly-soft)'},
+  biannual:  {label:'Twice a year', cadence:'Every 6 months', color:'var(--season)',    soft:'var(--season-soft)'},
+  annual:    {label:'Yearly',       cadence:'Once a year',    color:'var(--season)',    soft:'var(--season-soft)'}
+};
+
+let view = 'week';
+let selectedDay = today.getDay();
+
+function setView(v){
+  view = v;
+  document.getElementById('tabWeek').classList.toggle('active', v==='week');
+  document.getElementById('tabAll').classList.toggle('active', v==='all');
+  render();
+}
+function selectDay(d){ selectedDay = d; if(view!=='week') setView('week'); else render(); }
+function backToToday(){ refreshDate(); selectedDay = today.getDay(); render(); }
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+function taskRow(t){
+  const done = isDone(t);
+  return `<div class="task ${done?'done':''}" role="checkbox" aria-checked="${done}" tabindex="0"
+       onclick="toggle('${t.id}')" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggle('${t.id}')}">
+    <div class="box"></div>
+    <div class="task-text"><span class="task-name">${esc(t.name)}</span><span class="room-tag">${esc(t.room)}</span></div>
+    <button class="edit-btn" aria-label="Edit ${esc(t.name)}" title="Edit"
+       onclick="event.stopPropagation(); openEdit('${t.id}')">&#9998;</button>
+  </div>`;
+}
+function pill(list){
+  const done = list.filter(isDone).length;
+  const complete = done===list.length && list.length>0;
+  return `<span class="${complete?'count-pill done':'count-pill'}">${complete?'✓ Done':done+' / '+list.length}</span>`;
+}
+function addBtn(freq, day, week){
+  return `<button class="add-btn" aria-label="Add a task here" title="Add a task"
+    onclick="openAdd('${freq}', ${day!==undefined?day:'undefined'}, ${week||'undefined'})">+</button>`;
+}
+function progressBar(list, color){
+  if(!list.length) return '';
+  const pct = Math.round(100 * list.filter(isDone).length / list.length);
+  return `<div class="bar"><div class="bar-fill" style="width:${pct}%; background:${color}"></div></div>`;
+}
+function section(title, sub, list, color, addArgs){
+  return `<div class="section">
+    <div class="section-head">
+      <div class="section-title"><span class="freq-dot" style="background:${color}"></span>${esc(title)}</div>
+      <div class="head-right">${list.length?pill(list):''}${addArgs?addBtn(...addArgs):''}</div>
+    </div>
+    ${sub?`<div class="section-sub">${esc(sub)}</div>`:''}
+    ${progressBar(list, color)}
+    ${list.length ? list.map(taskRow).join('') : '<div class="empty-note">Nothing here yet — tap + to add something.</div>'}
+  </div>`;
+}
+
+function renderRhythm(){
+  const names = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const order = [1,2,3,4,5,6,0];
+  document.getElementById('rhythmStrip').innerHTML = order.map(d=>{
+    const isToday = d===today.getDay();
+    const isSel = d===selectedDay;
+    const flex = (d===0||d===6);
+    return `<button class="day-chip ${isToday?'is-today':''} ${isSel?'is-selected':''} ${flex?'flex-day':''}"
+      onclick="selectDay(${d})" aria-label="${names[d]}: ${DAY_FOCUS[d]}">
+      <div class="dow">${names[d]}</div><div class="focus">${DAY_FOCUS[d]}</div>
+    </button>`;
+  }).join('');
+}
+
+function renderBackToToday(){
+  const btn = document.getElementById('backTodayBtn');
+  if(btn) btn.remove();
+  if(view==='week' && selectedDay !== today.getDay()){
+    const b = document.createElement('button');
+    b.id = 'backTodayBtn';
+    b.className = 'back-today';
+    b.textContent = '↩ Back to today';
+    b.onclick = backToToday;
+    document.getElementById('tabBar').appendChild(b);
+  }
+}
+
+function renderWeek(){
+  const daily = tasks.filter(t=>t.freq==='daily');
+  const dayTasks = tasks.filter(t=>t.freq==='weekly' && t.day===selectedDay);
+  const wom = weekOfMonth();
+  const monthTasks = tasks.filter(t=>t.freq==='monthly' && t.week===wom);
+  const isToday = selectedDay===today.getDay();
+  const flexDay = (selectedDay===0 || selectedDay===6);
+  const dayTitle = (isToday?'Today':DAY_NAMES[selectedDay]) + ' — ' + DAY_FOCUS[selectedDay];
+
+  let html = section('Daily habits','About 15–20 minutes, spread through the day', daily, 'var(--daily)', ['daily']);
+
+  if(dayTasks.length || !flexDay){
+    html += section(dayTitle, (isToday?'Today\u2019s':'This day\u2019s')+' weekly focus \u00b7 30\u201345 minutes',
+                    dayTasks,'var(--weekly)', ['weekly', selectedDay]);
+  } else {
+    html += `<div class="section">
+      <div class="section-head">
+        <div class="section-title"><span class="freq-dot" style="background:var(--weekly)"></span>${esc(dayTitle)}</div>
+        <div class="head-right">${addBtn('weekly', selectedDay)}</div>
+      </div>
+      <div class="empty-note">No assigned focus — rest, or knock out something from the deep-clean list below.</div>
+    </div>`;
+  }
+
+  html += section('Week '+wom+' deep clean — '+WEEK_THEME[wom],
+                  'This month\u2019s rotation \u00b7 do these any day this week',
+                  monthTasks,'var(--monthly)', ['monthly', undefined, wom]);
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderAll(){
+  let html = '';
+  const groups = ['daily','weekly','monthly','quarterly','biannual','annual'];
+  for(const f of groups){
+    const meta = FREQ_META[f];
+    const list = tasks.filter(t=>t.freq===f);
+    html += `<div class="freq-band"><h2>${meta.label}</h2>
+      <span class="cadence" style="color:${meta.color}; background:${meta.soft}">${meta.cadence}</span>
+      ${pill(list)} ${addBtn(f, f==='weekly'?1:undefined, f==='monthly'?1:undefined)}</div>`;
+
+    if(f==='weekly'){
+      html += `<div class="section">` + [1,2,3,4,5,6,0].map(d=>{
+        const dTasks = tasks.filter(t=>t.freq==='weekly'&&t.day===d);
+        if(!dTasks.length && (d===6||d===0)) return '';
+        const label = DAY_NAMES[d] + ((d>=1&&d<=5) ? ' · '+DAY_FOCUS[d] : '');
+        return `<div class="subgroup-title">${label}</div>` + dTasks.map(taskRow).join('');
+      }).join('') + `</div>`;
+    } else if(f==='monthly'){
+      html += `<div class="section">` + [1,2,3,4].map(w=>
+        `<div class="subgroup-title">Week ${w} · ${WEEK_THEME[w]}</div>` +
+        tasks.filter(t=>t.freq==='monthly'&&t.week===w).map(taskRow).join('')
+      ).join('') + `</div>`;
+    } else {
+      html += `<div class="section">` + (list.length ? list.map(taskRow).join('') : '<div class="empty-note">Nothing here yet — tap + to add something.</div>') + `</div>`;
+    }
+  }
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderOverall(){
+  const plate = [
+    ...tasks.filter(t=>t.freq==='daily'),
+    ...tasks.filter(t=>t.freq==='weekly'&&t.day===today.getDay()),
+    ...tasks.filter(t=>t.freq==='monthly'&&t.week===weekOfMonth())
+  ];
+  const done = plate.filter(isDone).length;
+  const pillEl = document.getElementById('overallPill');
+  const complete = done===plate.length && plate.length>0;
+  pillEl.textContent = complete ? '✓ All done — the house says thank you' : done+' / '+plate.length+' on today\u2019s plate';
+  pillEl.className = complete ? 'count-pill done' : 'count-pill';
+}
+
+function render(){
+  refreshDate();
+  document.getElementById('todayLabel').textContent =
+    today.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  renderRhythm();
+  renderBackToToday();
+  renderOverall();
+  if(view==='week') renderWeek(); else renderAll();
+}
+
+loadState().then(render);
+</script>
+</body>
+</html>
